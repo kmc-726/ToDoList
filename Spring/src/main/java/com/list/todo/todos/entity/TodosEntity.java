@@ -1,5 +1,6 @@
-package com.list.todo.entity;
+package com.list.todo.todos.entity;
 
+import com.list.todo.auth.entity.UserEntity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;

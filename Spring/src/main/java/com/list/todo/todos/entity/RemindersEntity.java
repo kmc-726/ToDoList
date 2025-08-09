@@ -1,4 +1,4 @@
-package com.list.todo.entity;
+package com.list.todo.todos.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
