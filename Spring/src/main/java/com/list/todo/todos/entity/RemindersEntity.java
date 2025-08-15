@@ -25,7 +25,7 @@ public class RemindersEntity {
     private String method = "sns";
 
     @Column(name = "is_sent")
-    private Boolean isSent = false;
+    private Boolean sent = false;
 
     @Column(name = "remind_at", nullable = false)
     private LocalDateTime remindAt;

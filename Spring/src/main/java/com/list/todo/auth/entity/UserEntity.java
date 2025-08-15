@@ -32,4 +32,7 @@ public class UserEntity {
 
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
+
+    @Column(nullable = false)
+    private String role = "USER";
 }

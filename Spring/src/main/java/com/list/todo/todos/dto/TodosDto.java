@@ -15,7 +15,7 @@ public class TodosDto {
     private Long userId;
     private String title;
     private String description;
-    private Boolean isCompleted;
+    private Boolean completed;
     private Integer priority;
     private LocalDate dueDate;
     private LocalDateTime createdAt;

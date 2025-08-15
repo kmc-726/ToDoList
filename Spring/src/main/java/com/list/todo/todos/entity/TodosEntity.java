@@ -2,12 +2,18 @@ package com.list.todo.todos.entity;
 
 import com.list.todo.auth.entity.UserEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-@Table(name = "Todos")
+@Table(name = "todos")
 @Entity
+@Getter
+@Setter
 public class TodosEntity {
 
     @Id
@@ -26,7 +32,7 @@ public class TodosEntity {
     private String description;
 
     @Column(name = "is_completed")
-    private Boolean isCompleted;
+    private Boolean completed;
 
     @Column(name = "priority")
     private Integer priority;
@@ -39,4 +45,18 @@ public class TodosEntity {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "todos", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RemindersEntity> reminders = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

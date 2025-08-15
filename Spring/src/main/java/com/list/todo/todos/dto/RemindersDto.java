@@ -13,7 +13,7 @@ public class RemindersDto {
     private Long reminderId;
     private Long todosId;
     private String method;
-    private Boolean isSent;
+    private Boolean sent;
     private LocalDateTime remindAt;
     private LocalDateTime createdAt;
 }
