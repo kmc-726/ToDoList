@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class JwtUtil {
 
     private static final long accessTokenValidTime = 1000 * 60 * 60;
-    private static final long refreshTokenValidTime = 1000 * 60 * 60 * 7;
+    private static final long refreshTokenValidTime = 1000 * 60 * 60 * 24 * 7;
     private final SecretKey key;
 
     public JwtUtil(@Value("${jwt.secret}") String secretKey){

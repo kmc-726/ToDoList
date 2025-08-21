@@ -1,6 +1,5 @@
 package com.list.todo.auth.dto;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

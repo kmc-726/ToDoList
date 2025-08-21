@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-
+// 향후 정규식 패턴 추가
 @Getter
 @Setter
 public class UserSignupRequestDto {
