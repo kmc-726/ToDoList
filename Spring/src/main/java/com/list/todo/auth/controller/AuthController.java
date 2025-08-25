@@ -11,9 +11,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,13 +34,13 @@ public class AuthController {
 
         Cookie accessTokenCookie = new Cookie("accessToken", loginResponseDto.getAccessToken());
         accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setSecure(false);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(60 * 60);
 
         Cookie refreshTokenCookie = new Cookie("refreshToken", loginResponseDto.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setSecure(false);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
 
@@ -68,13 +65,13 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response) {
         Cookie deleteAccessToken = new Cookie("accessToken", null);
         deleteAccessToken.setHttpOnly(true);
-        deleteAccessToken.setSecure(true);
+        deleteAccessToken.setSecure(false);
         deleteAccessToken.setPath("/");
         deleteAccessToken.setMaxAge(0);
 
         Cookie deleteRefreshToken = new Cookie("refreshToken", null);
         deleteRefreshToken.setHttpOnly(true);
-        deleteRefreshToken.setSecure(true);
+        deleteRefreshToken.setSecure(false);
         deleteRefreshToken.setPath("/");
         deleteRefreshToken.setMaxAge(0);
 

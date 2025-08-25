@@ -2,9 +2,12 @@ package com.list.todo.auth.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,10 +20,12 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class JwtUtil {
 
@@ -28,8 +33,9 @@ public class JwtUtil {
     private static final long refreshTokenValidTime = 1000 * 60 * 60 * 24 * 7;
     private final SecretKey key;
 
-    public JwtUtil(@Value("${jwt.secret}") String secretKey){
-        this.key= Keys.hmacShaKeyFor(secretKey.getBytes());
+    public JwtUtil(@Value("${jwt.secret}") String base64SecretKey){
+        byte[] keyBytes = Base64.getDecoder().decode(base64SecretKey);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String createAccessToken(Authentication authentication){
@@ -71,6 +77,8 @@ public class JwtUtil {
                     .filter(String.class::isInstance)
                     .map(String.class::cast)
                     .toList();
+        } else if (rolesObject instanceof String) {
+            roles = List.of(((String) rolesObject).split(","));
         } else {
             roles = new ArrayList<>();
         }
@@ -79,6 +87,11 @@ public class JwtUtil {
         List<GrantedAuthority> authorities = roles.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
+
+        log.info("rolesObject: {}", rolesObject);
+        log.info("authorities: {}", authorities);
+        log.info("JWT subject: {}", claims.getSubject());
+        log.info("JWT roles: {}", claims.get("roles"));
 
         UserDetails userDetails = new User(loginId, "", authorities);
 
@@ -92,17 +105,87 @@ public class JwtUtil {
     public Boolean validateToken(String token){
         try {
             Claims claims = getClaims(token);
+            log.info("토큰 만료일: {}", claims.getExpiration());
             return !claims.getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
+            log.info("토큰 검증실패:{}", e.getMessage());
+            log.warn("토큰 검증실패:{}", e.getMessage());
             return false;
         }
     }
 
+//    public String resolveToken(HttpServletRequest request) {
+//        log.info("=== resolveToken 호출됨 ===");
+//
+//        if (request.getCookies() != null) {
+//            for (Cookie cookie : request.getCookies()) {
+//                log.info("쿠키: {} = {}", cookie.getName(), cookie.getValue());
+//            }
+//        } else {
+//            log.warn("쿠키가 없습니다.");
+//        }
+//
+//        String bearerToken = request.getHeader("Authorization");
+//        log.info("Authorization 헤더: {}", bearerToken);
+//
+//        if (request.getCookies() != null) {
+//            for (Cookie cookie : request.getCookies()) {
+//                if ("accessToken".equals(cookie.getName())) {
+//                    // accessToken 쿠키를 찾았으므로 즉시 값을 반환
+//                    return cookie.getValue();
+//                }
+//            }
+//        }
+//
+//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+//            return bearerToken.substring(7);
+//        }
+//
+//        return null;
+//    }
+
+
+//    public String resolveToken(HttpServletRequest request) {
+//        log.info("=== resolveToken 호출됨 ===");
+//
+//        // 추가로 Authorization 헤더도 확인합니다.
+//        String bearerToken = request.getHeader("Authorization");
+//        log.info("Authorization 헤더: {}", bearerToken);
+//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+//            return bearerToken.substring(7);
+//        }
+//
+//        if (request.getCookies() != null) {
+//            for (Cookie cookie : request.getCookies()) {
+//                log.info("쿠키: {} = {}", cookie.getName(), cookie.getValue());
+//                // 여기서 쿠키 이름이 "accessToken"인지 확인하고 값을 반환
+//                if (cookie.getName().equals("accessToken")) {
+//                    return cookie.getValue();
+//                }
+//            }
+//        } else {
+//            log.warn("쿠키가 없습니다.");
+//        }
+//
+//        return null;
+//    }
+
     public String resolveToken(HttpServletRequest request) {
+        // 우선 Authorization 헤더에서 찾기 시도
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
+
+        // Authorization 헤더 없으면 쿠키에서 찾기
+        if (request.getCookies() != null) {
+            for (var cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
         return null;
     }
+
 }

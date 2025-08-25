@@ -5,6 +5,7 @@ import com.list.todo.auth.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -18,7 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity
+//@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -29,7 +30,7 @@ public class SecurityConfig {
         return http
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new CorsConfiguration();
-                    corsConfig.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트 도메인
+                    corsConfig.setAllowedOriginPatterns(List.of("http://localhost:5173"));
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
                     corsConfig.setAllowedHeaders(List.of("*"));
                     corsConfig.setAllowCredentials(true); // 쿠키 허용 필수
@@ -42,6 +43,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // 로그인, 회원가입 허용
+//                        .requestMatchers(HttpMethod.GET, "/todos/**").hasAuthority("ROLE_USER")
+//                        .requestMatchers(HttpMethod.POST, "/todos/**").hasAuthority("ROLE_USER")
                         .anyRequest().authenticated()             // 그 외는 인증 필요
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)

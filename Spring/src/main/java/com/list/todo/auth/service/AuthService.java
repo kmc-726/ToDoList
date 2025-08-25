@@ -13,6 +13,7 @@ import com.list.todo.auth.repository.RefreshTokenRepository;
 import com.list.todo.auth.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,7 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -88,6 +89,7 @@ public class AuthService {
                             }
                     );
 
+            log.info("Generated AccessToken: {}", accessToken);
             return new LoginResponseDto(accessToken, refreshToken);
 
         } catch (AuthenticationException e) {
