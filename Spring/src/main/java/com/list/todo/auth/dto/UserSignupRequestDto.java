@@ -33,4 +33,6 @@ public class UserSignupRequestDto {
 
     @NotBlank(message = "휴대폰번호는 필수입니다.")
     private String phoneNumber;
+
+    private String fcmToken;
 }

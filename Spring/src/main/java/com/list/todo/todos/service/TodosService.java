@@ -2,14 +2,14 @@ package com.list.todo.todos.service;
 
 import com.list.todo.auth.entity.UserEntity;
 import com.list.todo.todos.dto.TodosDto;
+import com.list.todo.todos.entity.RemindersEntity;
 import com.list.todo.todos.entity.TodosEntity;
+import com.list.todo.todos.repository.ReminderRepository;
 import com.list.todo.todos.repository.TodosRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class TodosService {
 
     private final TodosRepository todosRepository;
+    private final ReminderRepository reminderRepository;
 
     public List<TodosDto> getTodosByUser(UserEntity user){
         List<TodosEntity> todos = todosRepository.findByUser(user);
@@ -25,7 +26,7 @@ public class TodosService {
     }
 
     public TodosDto createTodo(TodosDto dto, UserEntity user) {
-        if (dto.getDueDate() != null && dto.getDueDate().isBefore(LocalDate.now())){
+        if (dto.getDueDate() != null && dto.getDueDate().isBefore(LocalDateTime.now())){
             throw new RuntimeException("마감일은 오늘 이후여야 합니다.");
         }
 
@@ -40,6 +41,16 @@ public class TodosService {
 
         TodosEntity saved = todosRepository.save(todosEntity);
 
+        if (saved.getDueDate() != null) {
+            RemindersEntity reminder = new RemindersEntity();
+            reminder.setTodos(saved);
+            reminder.setRemindAt(saved.getDueDate().minusHours(24)); // 또는 시간 포함하면 그대로 사용
+            reminder.setMethod("fcm");
+            reminder.setSent(false);
+
+            reminderRepository.save(reminder);
+        }
+
         return toDto(saved);
     }
 
@@ -51,7 +62,7 @@ public class TodosService {
             throw new RuntimeException("권한이 없습니다");
         }
 
-        if (dto.getDueDate() != null && dto.getDueDate().isBefore(LocalDate.now())){
+        if (dto.getDueDate() != null && dto.getDueDate().isBefore(LocalDateTime.now())){
             throw new RuntimeException("마감일은 오늘 이후여야 합니다.");
         }
 
@@ -63,6 +74,23 @@ public class TodosService {
 
         TodosEntity updated = todosRepository.save(todo);
 
+        if (updated.getDueDate() != null) {
+            reminderRepository.findByTodos(updated).ifPresentOrElse(
+                    reminder -> {
+                        reminder.setRemindAt(updated.getDueDate().minusHours(24));
+                        reminder.setSent(false);
+                        reminderRepository.save(reminder);
+                    },
+                    () -> {
+                        RemindersEntity newReminder = new RemindersEntity();
+                        newReminder.setTodos(updated);
+                        newReminder.setRemindAt(updated.getDueDate().minusHours(24));
+                        newReminder.setMethod("fcm");
+                        newReminder.setSent(false);
+                        reminderRepository.save(newReminder);
+                    }
+            );
+        }
         return toDto(updated);
     }
 

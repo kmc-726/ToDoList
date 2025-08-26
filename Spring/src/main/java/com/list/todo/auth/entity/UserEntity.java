@@ -35,4 +35,7 @@ public class UserEntity {
 
     @Column(nullable = false)
     private String role = "USER";
+
+//    @Column(name = "fcm_token", length = 512)
+//    private String fcmToken;
 }

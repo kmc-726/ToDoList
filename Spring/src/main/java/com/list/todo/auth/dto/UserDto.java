@@ -13,4 +13,5 @@ public class UserDto {
     private String userName;
     private String nickName;
     private String phoneNumber;
+    private String fcmToken;
 }

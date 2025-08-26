@@ -11,6 +11,9 @@ import com.list.todo.auth.exception.TokenException;
 import com.list.todo.auth.jwt.JwtUtil;
 import com.list.todo.auth.repository.RefreshTokenRepository;
 import com.list.todo.auth.repository.UserRepository;
+import com.list.todo.todos.dto.FcmTokenRequest;
+import com.list.todo.todos.entity.FcmTokenEntity;
+import com.list.todo.todos.repository.FcmTokenRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,6 +37,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final FcmTokenRepository fcmTokenRepository;
 
     public void signup(UserSignupRequestDto dto){
         if (userRepository.existsByLoginId(dto.getLoginId())){
@@ -47,6 +53,8 @@ public class AuthService {
             throw new SignupException("비밀번호가 일치하지 않습니다.");
         }
 
+        log.info("Received FCM Token: {}", dto.getFcmToken());
+
         UserEntity user = new UserEntity();
         user.setLoginId(dto.getLoginId());
         user.setEmail(dto.getEmail());
@@ -55,8 +63,20 @@ public class AuthService {
         user.setNickName(dto.getNickName());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setRole("USER");
+//        user.setFcmToken(dto.getFcmToken());
 
         userRepository.save(user);
+
+        if (dto.getFcmToken() != null && !dto.getFcmToken().isBlank()) {
+            fcmTokenRepository.findByToken(dto.getFcmToken())
+                    .or(() -> {
+                        FcmTokenEntity tokenEntity = new FcmTokenEntity();
+                        tokenEntity.setUser(user);
+                        tokenEntity.setToken(dto.getFcmToken());
+                        tokenEntity.setLastUpdated(LocalDateTime.now());
+                        return Optional.of(fcmTokenRepository.save(tokenEntity));
+                    });
+        }
     }
 
     // signupException 의미 혼동 있을 수 있으니 추후 새로 만들어서 사용

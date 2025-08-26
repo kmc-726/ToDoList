@@ -1,5 +1,6 @@
 package com.list.todo.todos.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.list.todo.auth.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -38,7 +39,8 @@ public class TodosEntity {
     private Integer priority;
 
     @Column(name = "due_date")
-    private LocalDate dueDate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime dueDate;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

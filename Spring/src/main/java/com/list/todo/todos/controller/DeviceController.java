@@ -28,50 +28,13 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping("/todos")
+@RequestMapping("/devices")
 @RequiredArgsConstructor
-public class TodosController {
+public class DeviceController {
 
     private final TodosService todosService;
     private final UserRepository userRepository;
     private final FcmTokenRepository fcmTokenRepository;
-
-    @GetMapping
-    public ResponseEntity<List<TodosDto>> getTodos(@AuthenticationPrincipal UserDetails principal) {
-        log.info("Current user: {}, authorities: {}", principal.getUsername(), principal.getAuthorities());
-        String loginId = principal.getUsername();
-        UserEntity user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        List<TodosDto> todos = todosService.getTodosByUser(user);
-
-        return ResponseEntity.ok(todos);
-    }
-
-//    @PreAuthorize("permitAll()")
-    @PostMapping("/psing")
-    public ResponseEntity<?> createTodo(@RequestBody @Valid TodosDto dto,
-                               BindingResult bindingResult,
-                               @AuthenticationPrincipal UserDetails principal
-    ) {
-        log.info("=== createTodo 진입 ===");
-        log.info("📌 principal: {}", principal);
-
-        if (principal == null) {
-            return ResponseEntity.status(401).body("로그인이 필요합니다.");
-        }
-
-        if (bindingResult.hasErrors()){
-            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
-        }
-        String loginId = principal.getUsername();
-        UserEntity user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        TodosDto posting = todosService.createTodo(dto, user);
-
-        return ResponseEntity.ok(posting);
-    }
 
     @PostMapping("/save-fcm-token")
     public ResponseEntity<?> saveFcmToken(@RequestBody FcmTokenRequest request, @AuthenticationPrincipal UserDetails userDetails) {
@@ -99,46 +62,21 @@ public class TodosController {
         return ResponseEntity.ok("FCM 토큰 저장 완료");
     }
 
-    @PutMapping("/updateTodo/{listId}")
-    public ResponseEntity<TodosDto> updatedTodo(@PathVariable Long listId,
-                                               @RequestBody TodosDto dto,
-                                               @AuthenticationPrincipal UserDetails principal){
-        String loginId = principal.getUsername();
-        UserEntity user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        TodosDto updated = todosService.updateTodo(listId, dto, user);
-
-        return ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("/{listId}")
-    public ResponseEntity<Void> deleteTodo(@PathVariable Long listId,
-                           @AuthenticationPrincipal UserDetails principal){
-        String loginId = principal.getUsername();
-        UserEntity user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        todosService.deleteTodo(listId, user);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/devices")
+    @GetMapping("")
     public List<DeviceDto> getMyDevices(@AuthenticationPrincipal UserEntity user) {
         return fcmTokenRepository.findAllByUser(user).stream()
                 .map(DeviceDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    @DeleteMapping("/devices/{id}")
+    @DeleteMapping("/{id}")
     public void deleteDevice(@PathVariable Long id, @AuthenticationPrincipal UserEntity user) {
         FcmTokenEntity token = fcmTokenRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         fcmTokenRepository.delete(token);
     }
 
-    @PatchMapping("/devices/{id}/toggle")
+    @PatchMapping("/{id}/toggle")
     public void toggleDevice(@PathVariable Long id, @AuthenticationPrincipal UserEntity user) {
         FcmTokenEntity token = fcmTokenRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
