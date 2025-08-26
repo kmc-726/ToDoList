@@ -3,7 +3,7 @@ package com.list.todo.auth.controller;
 import com.list.todo.auth.dto.LoginRequestDto;
 import com.list.todo.auth.dto.LoginResponseDto;
 import com.list.todo.auth.dto.UserSignupRequestDto;
-import com.list.todo.auth.jwt.JwtUtil;
+import com.list.todo.auth.security.jwt.JwtUtil;
 import com.list.todo.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
