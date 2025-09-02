@@ -1,0 +1,16 @@
+# node_modules 무시
+node_modules/
+
+# 환경 변수 파일
+.env
+
+# 로그 파일
+*.log
+
+# 운영체제별 무시 파일
+.DS_Store
+Thumbs.db
+
+# IDE 설정
+.vscode/
+.idea/
