@@ -2,6 +2,7 @@ package com.list.todo.post.shared.service;
 
 import com.list.todo.auth.entity.UserEntity;
 import com.list.todo.auth.repository.UserRepository;
+import com.list.todo.global.exception.*;
 import com.list.todo.post.board.entity.BoardEntity;
 import com.list.todo.post.board.entity.BoardLikeEntity;
 import com.list.todo.post.board.repository.BoardLikeRepository;
@@ -12,7 +13,6 @@ import com.list.todo.post.comment.repository.CommentLikeRepository;
 import com.list.todo.post.comment.repository.CommentRepository;
 import com.list.todo.post.shared.entity.LikeEntity;
 import com.list.todo.post.shared.entity.LikeEntity.LikeType;
-import com.list.todo.post.shared.entity.LikeEntity.EntityType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,14 +26,13 @@ public class LikeService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
-
     private final BoardLikeRepository boardLikeRepository;  // 구체적인 BoardLikeRepository
     private final CommentLikeRepository commentLikeRepository; // 구체적인 CommentLikeRepository
 
     @Transactional
     public String handleLike(Long entityId, String username, LikeType type, String entityType) {
         UserEntity user = userRepository.findByLoginId(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new LoginException("사용자를 찾을 수 없습니다."));
 
         LikeEntity<?> likeEntity = findLikeEntity(entityId, user, entityType);
 
@@ -72,7 +71,7 @@ public class LikeService {
     private LikeEntity<?> createLikeEntity(Long entityId, UserEntity user, LikeType type, String entityType) {
         if ("BOARD".equalsIgnoreCase(entityType)) {
             BoardEntity board = boardRepository.findById(entityId)
-                    .orElseThrow(() -> new RuntimeException("Board not found"));
+                    .orElseThrow(() -> new BoardException("게시글을 찾을 수 없습니다."));
             BoardLikeEntity likeEntity = new BoardLikeEntity();
             likeEntity.setEntity(board);  // BoardEntity 설정
             likeEntity.setUser(user);
@@ -80,14 +79,14 @@ public class LikeService {
             return likeEntity;
         } else if ("COMMENT".equalsIgnoreCase(entityType)) {
             CommentEntity comment = commentRepository.findById(entityId)
-                    .orElseThrow(() -> new RuntimeException("Comment not found"));
+                    .orElseThrow(() -> new CommentException("댓글을 찾을 수 없습니다."));
             CommentLikeEntity likeEntity = new CommentLikeEntity();
             likeEntity.setEntity(comment);  // CommentEntity 설정
             likeEntity.setUser(user);
             likeEntity.setType(type);
             return likeEntity;
         }
-        throw new RuntimeException("Unsupported entity type: " + entityType);
+        throw new UnsupportedEntityTypeException("처리할 수 없는 엔티티타입: " + entityType);
     }
 
     private void saveLike(LikeEntity<?> likeEntity) {
@@ -96,7 +95,7 @@ public class LikeService {
         } else if (likeEntity instanceof CommentLikeEntity) {
             commentLikeRepository.save((CommentLikeEntity) likeEntity);
         } else {
-            throw new RuntimeException("Unsupported like entity: " + likeEntity.getClass());
+            throw new UnsupportedLikeEntityTypeException("처리할 수 없는 엔티티타입: " + likeEntity.getClass());
         }
     }
 
@@ -106,7 +105,8 @@ public class LikeService {
         } else if (likeEntity instanceof CommentLikeEntity commentLikeEntity) {
             commentLikeRepository.deleteByUserAndComment(commentLikeEntity.getUser(), commentLikeEntity.getEntity());
         } else {
-            throw new RuntimeException("Unsupported like entity: " + likeEntity.getClass());
+            throw new UnsupportedLikeEntityTypeException("처리할 수 없는 엔티티타입: " + likeEntity.getClass());
+
         }
     }
 
@@ -116,19 +116,20 @@ public class LikeService {
 
         if ("BOARD".equalsIgnoreCase(entityType)) {
             BoardEntity board = boardRepository.findById(entityId)
-                    .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new BoardException("게시글을 찾을 수 없습니다."));
 
             likeCount = boardLikeRepository.countByBoardAndType(board, LikeType.LIKE);
             dislikeCount = boardLikeRepository.countByBoardAndType(board, LikeType.DISLIKE);
         } else if ("COMMENT".equalsIgnoreCase(entityType)) {
             CommentEntity comment = commentRepository.findById(entityId)
-                    .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new CommentException("댓글을 찾을 수 없습니다."));
 
             likeCount = commentLikeRepository.countByCommentAndType(comment, LikeType.LIKE);
             dislikeCount = commentLikeRepository.countByCommentAndType(comment, LikeType.DISLIKE);
 
         } else {
-            throw new RuntimeException("처리할 수 없는 엔티티타입: " + entityType);
+            throw new UnsupportedEntityTypeException("처리할 수 없는 엔티티타입: " + entityType);
+
         }
 
         return Map.of("like", likeCount, "dislike", dislikeCount);

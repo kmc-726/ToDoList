@@ -5,9 +5,9 @@ import com.list.todo.auth.dto.LoginResponseDto;
 import com.list.todo.auth.dto.UserSignupRequestDto;
 import com.list.todo.auth.entity.RefreshTokenEntity;
 import com.list.todo.auth.entity.UserEntity;
-import com.list.todo.auth.exception.LoginException;
-import com.list.todo.auth.exception.SignupException;
-import com.list.todo.auth.exception.TokenException;
+import com.list.todo.global.exception.LoginException;
+import com.list.todo.global.exception.SignupException;
+import com.list.todo.global.exception.TokenException;
 import com.list.todo.auth.security.jwt.JwtUtil;
 import com.list.todo.auth.repository.RefreshTokenRepository;
 import com.list.todo.auth.repository.UserRepository;
@@ -62,7 +62,6 @@ public class AuthService {
         user.setNickName(dto.getNickName());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setRole("USER");
-//        user.setFcmToken(dto.getFcmToken());
 
         userRepository.save(user);
 
@@ -78,7 +77,6 @@ public class AuthService {
         }
     }
 
-    // signupException 의미 혼동 있을 수 있으니 추후 새로 만들어서 사용
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         try {
             UserEntity user = userRepository.findByLoginId(loginRequestDto.getLoginId())
@@ -122,12 +120,9 @@ public class AuthService {
         }
 
         Claims claims = jwtUtil.getClaims(refreshToken);
-//        Long userId = Long.parseLong(claims.getSubject());
 
         String loginId = claims.getSubject();
 
-//        UserEntity userEntity = userRepository.findById(userId)
-//                .orElseThrow(() -> new TokenException("사용자를 찾을 수 없습니다."));
         UserEntity userEntity = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new TokenException("사용자를 찾을 수 없습니다."));
 

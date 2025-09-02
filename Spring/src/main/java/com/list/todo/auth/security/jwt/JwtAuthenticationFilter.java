@@ -37,7 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.info("JwtAuthenticationFilter - 인증 성공: {}", authentication.getName());
                 }
             } catch (Exception e) {
-                // 인증 실패는 로그만 남기고 흐름은 계속 진행 (401 처리는 컨트롤러 단에서)
                 log.info("JwtAuthenticationFilter - 토큰 없음 또는 유효하지 않음");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;

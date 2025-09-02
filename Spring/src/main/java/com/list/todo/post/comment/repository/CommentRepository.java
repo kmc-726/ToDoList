@@ -1,6 +1,5 @@
 package com.list.todo.post.comment.repository;
 
-import com.list.todo.post.board.entity.BoardEntity;
 import com.list.todo.post.comment.entity.CommentEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

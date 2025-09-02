@@ -1,6 +1,9 @@
 package com.list.todo.post.comment.service;
 
 import com.list.todo.auth.entity.UserEntity;
+import com.list.todo.global.exception.BoardException;
+import com.list.todo.global.exception.CommentException;
+import com.list.todo.global.exception.LoginException;
 import com.list.todo.auth.repository.UserRepository;
 import com.list.todo.post.board.entity.BoardEntity;
 import com.list.todo.post.board.repository.BoardRepository;
@@ -17,10 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +34,10 @@ public class CommentService {
     public CommentResponse createComment(CommentDto dto, String loginId) {
 
         BoardEntity board = boardRepository.findById(dto.getBoardId())
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BoardException("게시글을 찾을 수 없습니다."));
 
         UserEntity user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new LoginException("사용자를 찾을 수 없습니다."));
 
         // 댓글 생성 로직
         CommentEntity comment = new CommentEntity();
@@ -52,7 +52,7 @@ public class CommentService {
 
     public CommentResponse updateComment(Long commentId, CommentDto dto, String loginId) {
         CommentEntity comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new CommentException("댓글을 찾을 수 없습니다."));
         comment.setContent(dto.getContent());
         commentRepository.save(comment);
         return toResponse(comment);
@@ -67,7 +67,7 @@ public class CommentService {
 
     public void deleteComment(Long commentId, String loginId) {
         CommentEntity comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new CommentException("댓글을 찾을 수 없습니다."));
         commentRepository.delete(comment);
     }
 
@@ -79,11 +79,9 @@ public class CommentService {
         res.setCreatedAt(comment.getCreatedAt());
         res.setUpdatedAt(comment.getUpdatedAt());
 
-//        Map<String, Long> likeCount = likeService.getLikeCount
         Map<String, Integer> likeCounts = likeService.getLikeCount(comment.getId(), "COMMENT");
         res.setLikes(likeCounts.getOrDefault("like", 0));
         res.setDisLikes(likeCounts.getOrDefault("dislike", 0));
-        // 추가적인 속성
         return res;
     }
 

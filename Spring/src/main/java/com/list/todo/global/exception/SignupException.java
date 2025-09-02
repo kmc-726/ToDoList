@@ -1,4 +1,4 @@
-package com.list.todo.auth.exception;
+package com.list.todo.global.exception;
 
 public class SignupException extends RuntimeException{
 

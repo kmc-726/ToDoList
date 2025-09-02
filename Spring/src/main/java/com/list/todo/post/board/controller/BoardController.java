@@ -1,10 +1,10 @@
 package com.list.todo.post.board.controller;
 
 import com.list.todo.auth.entity.UserEntity;
+import com.list.todo.global.exception.LoginException;
 import com.list.todo.auth.repository.UserRepository;
 import com.list.todo.post.board.dto.BoardRequest;
 import com.list.todo.post.board.service.BoardService;
-import com.list.todo.post.shared.entity.LikeEntity;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public class BoardController {
                                     @AuthenticationPrincipal UserDetails userDetails) {
         String loginId = userDetails.getUsername();
         UserEntity user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+                .orElseThrow(() -> new LoginException("사용자를 찾을 수 없습니다."));
 
         return ResponseEntity.ok(boardService.createBoard(request, user));
     }

@@ -1,6 +1,7 @@
 package com.list.todo.todos.fcm.controller;
 
 import com.list.todo.auth.entity.UserEntity;
+import com.list.todo.global.exception.LoginException;
 import com.list.todo.auth.repository.UserRepository;
 import com.list.todo.todos.fcm.dto.DeviceDto;
 import com.list.todo.todos.fcm.dto.FcmTokenRequest;
@@ -34,7 +35,7 @@ public class DeviceController {
     public ResponseEntity<?> saveFcmToken(@RequestBody FcmTokenRequest request, @AuthenticationPrincipal UserDetails userDetails) {
         String loginId = userDetails.getUsername();
         UserEntity user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+                .orElseThrow(() -> new LoginException("사용자를 찾을 수 없습니다."));
 
         int deviceCount = fcmTokenRepository.findAllByUser(user).size();
         if (deviceCount >= 2) {

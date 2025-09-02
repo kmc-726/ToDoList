@@ -2,7 +2,6 @@ package com.list.todo.post.shared.controller;
 
 import com.list.todo.post.shared.service.LikeService;
 import com.list.todo.post.shared.entity.LikeEntity.LikeType;
-import com.list.todo.post.shared.entity.LikeEntity.EntityType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

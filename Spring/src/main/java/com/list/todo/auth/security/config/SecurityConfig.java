@@ -17,7 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import java.util.List;
 
 @Configuration
-//@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -41,8 +40,6 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // 로그인, 회원가입 허용
-//                        .requestMatchers(HttpMethod.GET, "/todos/**").hasAuthority("ROLE_USER")
-//                        .requestMatchers(HttpMethod.POST, "/todos/**").hasAuthority("ROLE_USER")
                         .anyRequest().authenticated()             // 그 외는 인증 필요
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)

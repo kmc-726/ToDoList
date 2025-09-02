@@ -1,8 +1,6 @@
 package com.list.todo.post.comment.entity;
 
-import com.list.todo.auth.entity.UserEntity;
 import com.list.todo.post.shared.entity.LikeEntity;
-import com.list.todo.post.comment.entity.CommentEntity;
 import jakarta.persistence.*;
 
 @Entity

@@ -2,10 +2,8 @@ package com.list.todo.auth.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -68,7 +65,6 @@ public class JwtUtil {
 
         String loginId = claims.getSubject();
 
-        // 클레임에서 권한 리스트 꺼내기 (예: "roles" 클레임에 권한 배열이 있다고 가정)
         Object rolesObject = claims.get("roles");
         List<String> roles;
 
@@ -83,7 +79,6 @@ public class JwtUtil {
             roles = new ArrayList<>();
         }
 
-        // 권한 문자열 리스트를 GrantedAuthority 리스트로 변환
         List<GrantedAuthority> authorities = roles.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
@@ -114,70 +109,13 @@ public class JwtUtil {
         }
     }
 
-//    public String resolveToken(HttpServletRequest request) {
-//        log.info("=== resolveToken 호출됨 ===");
-//
-//        if (request.getCookies() != null) {
-//            for (Cookie cookie : request.getCookies()) {
-//                log.info("쿠키: {} = {}", cookie.getName(), cookie.getValue());
-//            }
-//        } else {
-//            log.warn("쿠키가 없습니다.");
-//        }
-//
-//        String bearerToken = request.getHeader("Authorization");
-//        log.info("Authorization 헤더: {}", bearerToken);
-//
-//        if (request.getCookies() != null) {
-//            for (Cookie cookie : request.getCookies()) {
-//                if ("accessToken".equals(cookie.getName())) {
-//                    // accessToken 쿠키를 찾았으므로 즉시 값을 반환
-//                    return cookie.getValue();
-//                }
-//            }
-//        }
-//
-//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//            return bearerToken.substring(7);
-//        }
-//
-//        return null;
-//    }
-
-
-//    public String resolveToken(HttpServletRequest request) {
-//        log.info("=== resolveToken 호출됨 ===");
-//
-//        // 추가로 Authorization 헤더도 확인합니다.
-//        String bearerToken = request.getHeader("Authorization");
-//        log.info("Authorization 헤더: {}", bearerToken);
-//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//            return bearerToken.substring(7);
-//        }
-//
-//        if (request.getCookies() != null) {
-//            for (Cookie cookie : request.getCookies()) {
-//                log.info("쿠키: {} = {}", cookie.getName(), cookie.getValue());
-//                // 여기서 쿠키 이름이 "accessToken"인지 확인하고 값을 반환
-//                if (cookie.getName().equals("accessToken")) {
-//                    return cookie.getValue();
-//                }
-//            }
-//        } else {
-//            log.warn("쿠키가 없습니다.");
-//        }
-//
-//        return null;
-//    }
-
     public String resolveToken(HttpServletRequest request) {
-        // 우선 Authorization 헤더에서 찾기 시도
+
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
 
-        // Authorization 헤더 없으면 쿠키에서 찾기
         if (request.getCookies() != null) {
             for (var cookie : request.getCookies()) {
                 if ("accessToken".equals(cookie.getName())) {

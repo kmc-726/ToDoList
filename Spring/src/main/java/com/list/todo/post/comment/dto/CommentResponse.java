@@ -1,6 +1,5 @@
 package com.list.todo.post.comment.dto;
 
-import com.list.todo.post.comment.entity.CommentEntity;
 import lombok.*;
 
 import java.time.LocalDateTime;

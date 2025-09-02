@@ -1,7 +1,6 @@
 package com.list.todo.post.board.entity;
 
 import com.list.todo.post.shared.entity.LikeEntity;
-import com.list.todo.post.board.entity.BoardEntity;
 import jakarta.persistence.*;
 
 @Entity

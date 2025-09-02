@@ -1,7 +1,6 @@
 package com.list.todo.post.comment.repository;
 
 import com.list.todo.auth.entity.UserEntity;
-import com.list.todo.post.board.entity.BoardLikeEntity;
 import com.list.todo.post.comment.entity.CommentEntity;
 import com.list.todo.post.comment.entity.CommentLikeEntity;
 import com.list.todo.post.shared.entity.LikeEntity;

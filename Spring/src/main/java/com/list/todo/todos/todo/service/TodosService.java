@@ -1,6 +1,9 @@
 package com.list.todo.todos.todo.service;
 
 import com.list.todo.auth.entity.UserEntity;
+import com.list.todo.global.exception.InvalidDueDateException;
+import com.list.todo.global.exception.PermissionDeniedException;
+import com.list.todo.global.exception.TodoException;
 import com.list.todo.todos.todo.dto.TodosDto;
 import com.list.todo.todos.reminder.entity.RemindersEntity;
 import com.list.todo.todos.todo.entity.TodosEntity;
@@ -27,7 +30,7 @@ public class TodosService {
 
     public TodosDto createTodo(TodosDto dto, UserEntity user) {
         if (dto.getDueDate() != null && dto.getDueDate().isBefore(LocalDateTime.now())){
-            throw new RuntimeException("마감일은 오늘 이후여야 합니다.");
+            throw new InvalidDueDateException("마감일은 오늘 이후여야 합니다.");
         }
 
         TodosEntity todosEntity = new TodosEntity();
@@ -56,14 +59,14 @@ public class TodosService {
 
     public TodosDto updateTodo(Long listId, TodosDto dto, UserEntity user){
         TodosEntity todo = todosRepository.findById(listId)
-                .orElseThrow(() -> new RuntimeException("해당 투두를 찾을 수 없습니다."));
+                .orElseThrow(() -> new TodoException("해당 투두를 찾을 수 없습니다."));
 
         if (!todo.getUser().getId().equals(user.getId()) && !user.getRole().equals("admin")){
-            throw new RuntimeException("권한이 없습니다");
+            throw new PermissionDeniedException("권한이 없습니다");
         }
 
         if (dto.getDueDate() != null && dto.getDueDate().isBefore(LocalDateTime.now())){
-            throw new RuntimeException("마감일은 오늘 이후여야 합니다.");
+            throw new InvalidDueDateException("마감일은 오늘 이후여야 합니다.");
         }
 
         todo.setTitle(dto.getTitle());
@@ -96,10 +99,10 @@ public class TodosService {
 
     public void deleteTodo(Long listId, UserEntity user){
         TodosEntity todo = todosRepository.findById(listId)
-                .orElseThrow(() -> new RuntimeException("해당 투두를 찾을 수 없습니다."));
+                .orElseThrow(() -> new TodoException("해당 투두를 찾을 수 없습니다."));
 
         if (!todo.getUser().getId().equals(user.getId()) && !user.getRole().equals("admin")){
-            throw new RuntimeException("권한이 없습니다");
+            throw new PermissionDeniedException("권한이 없습니다");
         }
 
         todosRepository.delete(todo);

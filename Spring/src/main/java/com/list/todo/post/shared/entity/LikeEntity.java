@@ -30,10 +30,6 @@ public abstract class LikeEntity<T> {
         LIKE, DISLIKE
     }
 
-    public enum EntityType {
-        COMMENT, BOARD
-    }
-
     public abstract void setEntity(T entity);
 
     public abstract T getEntity();
