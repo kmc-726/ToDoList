@@ -15,4 +15,5 @@ public class BoardResponse {
     private Integer likes;
     private Integer disLikes;
     private Boolean isPublic;
+    private String loginId;
 }

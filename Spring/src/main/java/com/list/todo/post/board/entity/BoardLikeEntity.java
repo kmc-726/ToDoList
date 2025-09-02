@@ -1,40 +1,24 @@
 package com.list.todo.post.board.entity;
 
-import com.list.todo.auth.entity.UserEntity;
+import com.list.todo.post.shared.entity.LikeEntity;
+import com.list.todo.post.board.entity.BoardEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
 
-import java.time.LocalDateTime;
 @Entity
-@Table(name = "board_like", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "board_id"})
-})
-@Getter
-@Setter
-public class BoardLikeEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    public enum LikeType {
-        LIKE, DISLIKE
-    }
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private LikeType type;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+public class BoardLikeEntity extends LikeEntity<BoardEntity> {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
     private BoardEntity board;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
+    @Override
+    public void setEntity(BoardEntity board) {
+        this.board = board;
+        this.setEntityType("BOARD");  // entityType을 설정
+    }
+
+    @Override
+    public BoardEntity getEntity() {
+        return this.board;
+    }
 }

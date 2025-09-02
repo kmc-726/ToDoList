@@ -1,4 +1,4 @@
-package com.list.todo.todos.config;
+package com.list.todo.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;

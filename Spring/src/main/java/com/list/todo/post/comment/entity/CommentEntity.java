@@ -3,7 +3,9 @@ package com.list.todo.post.comment.entity;
 import com.list.todo.auth.entity.UserEntity;
 import com.list.todo.post.board.entity.BoardEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -15,6 +17,8 @@ import java.time.LocalDateTime;
 @Table(name = "comment")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class CommentEntity {
 
@@ -39,4 +43,8 @@ public class CommentEntity {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    public CommentEntity(Long id) {
+        this.id = id;
+    }
 }
