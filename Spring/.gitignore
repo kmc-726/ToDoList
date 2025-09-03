@@ -36,5 +36,5 @@ out/
 ### VS Code ###
 .vscode/
 
-# Firebase secret key
+# Firebase secret keyg
 Spring/src/main/resources/firebase/firebase-service-account.json
