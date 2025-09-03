@@ -3,34 +3,32 @@ package com.list.todo.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
-@Configuration
+@Component
 public class FirebaseConfig {
 
     @PostConstruct
-    public void initialize() {
-        try {
-            InputStream serviceAccount = getClass().getResourceAsStream("/firebase/firebase-service-account.json");
+    public void initialize() throws IOException {
+        String configPath = System.getenv("FIREBASE_CONFIG_PATH");
 
-            if (serviceAccount == null) {
-                throw new IllegalStateException("❌ Firebase 서비스 계정 키를 찾을 수 없습니다. 경로를 확인하세요.");
-            }
+        if (configPath == null || configPath.isEmpty()) {
+            throw new IllegalStateException("FIREBASE_CONFIG_PATH 환경변수가 설정되지 않았습니다.");
+        }
 
-            FirebaseOptions firebaseOptions = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
+        FileInputStream serviceAccount = new FileInputStream(configPath);
 
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(firebaseOptions);
-            }
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .build();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (FirebaseApp.getApps().isEmpty()) {
+            FirebaseApp.initializeApp(options);
+            System.out.println("✅ Firebase initialized successfully");
         }
     }
 }
