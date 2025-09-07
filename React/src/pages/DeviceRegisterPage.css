@@ -1,0 +1,31 @@
+.device-page {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.device-page button {
+    margin-left: 0.5rem;
+}
+
+.device-list{
+    margin-top: 1rem;
+    margin-bottom: 20px;
+}
+
+.device-item{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+}
+
+.device-plus{
+    margin-left: 10px;
+}

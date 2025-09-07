@@ -1,0 +1,37 @@
+.board-form {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.board-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.board-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.board-form input[type="text"],
+.board-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.2s;
+}
+
+.board-form input:focus,
+.board-form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.board-form input[type="checkbox"] {
+    margin-left: 10px;
+}
