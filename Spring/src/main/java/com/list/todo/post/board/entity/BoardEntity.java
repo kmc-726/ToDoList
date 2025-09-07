@@ -38,6 +38,8 @@ public class BoardEntity {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    private LocalDateTime deletedAt;
+
     private boolean deleted = false;
     private boolean isPublic = true;
 

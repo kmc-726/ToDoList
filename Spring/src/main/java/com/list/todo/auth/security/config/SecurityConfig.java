@@ -27,7 +27,7 @@ public class SecurityConfig {
         return http
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new CorsConfiguration();
-                    corsConfig.setAllowedOriginPatterns(List.of("http://localhost:5173"));
+                    corsConfig.setAllowedOrigins(List.of("http://localhost:5173"));
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
                     corsConfig.setAllowedHeaders(List.of("*"));
                     corsConfig.setAllowCredentials(true); // 쿠키 허용 필수

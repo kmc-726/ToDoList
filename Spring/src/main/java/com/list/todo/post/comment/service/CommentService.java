@@ -1,10 +1,12 @@
 package com.list.todo.post.comment.service;
 
+import com.list.todo.auth.dto.UserDto;
 import com.list.todo.auth.entity.UserEntity;
 import com.list.todo.global.exception.BoardException;
 import com.list.todo.global.exception.CommentException;
 import com.list.todo.global.exception.LoginException;
 import com.list.todo.auth.repository.UserRepository;
+import com.list.todo.global.exception.UnauthorizedException;
 import com.list.todo.post.board.entity.BoardEntity;
 import com.list.todo.post.board.repository.BoardRepository;
 import com.list.todo.post.comment.dto.CommentDto;
@@ -50,38 +52,88 @@ public class CommentService {
         return toResponse(comment);
     }
 
-    public CommentResponse updateComment(Long commentId, CommentDto dto, String loginId) {
-        CommentEntity comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentException("댓글을 찾을 수 없습니다."));
-        comment.setContent(dto.getContent());
-        commentRepository.save(comment);
-        return toResponse(comment);
-    }
+//    public CommentResponse updateComment(Long commentId, CommentDto dto, String loginId) {
+//        CommentEntity comment = commentRepository.findById(commentId)
+//                .orElseThrow(() -> new CommentException("댓글을 찾을 수 없습니다."));
+//        comment.setContent(dto.getContent());
+//        commentRepository.save(comment);
+//        return toResponse(comment);
+//    }
 
-    public Page<CommentResponse> getCommentList(int page, int size) {
+    public Page<CommentResponse> getCommentList(Long boardId, int page, int size, String loginId) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<CommentEntity> boards = commentRepository.findAll(pageable);
+        Page<CommentEntity> boards = commentRepository.findByBoardIdAndDeletedFalseOrderByCreatedAtDesc(boardId, pageable);
 
-        return boards.map(this::toResponse);
+        return boards.map(comment -> toResponse(comment, loginId));
     }
 
-    public void deleteComment(Long commentId, String loginId) {
+    public void deleteComment(Long commentId, Long userId, boolean isAdmin) {
         CommentEntity comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentException("댓글을 찾을 수 없습니다."));
-        commentRepository.delete(comment);
+
+        boolean isAuthor = comment.getUser().getId().equals(userId);
+
+        if (!isAuthor && !isAdmin) {
+            throw new UnauthorizedException("작성자 또는 관리자만 삭제할 수 있습니다.");
+        }
+
+        comment.setDeleted(true); // soft delete
+        commentRepository.save(comment);
     }
 
     private CommentResponse toResponse(CommentEntity comment) {
         CommentResponse res = new CommentResponse();
+
+        UserEntity userEntity = comment.getUser();
+        UserDto userDto = new UserDto();
+        userDto.setUserName(userEntity.getUserName());
+        userDto.setLoginId(userEntity.getLoginId());
+        // 필요한 UserDto 필드들 채우기
+
+        res.setUser(userDto);
+
         res.setId(comment.getId());
         res.setContent(comment.getContent());
-        res.setUserName(comment.getUser().getUserName());
         res.setCreatedAt(comment.getCreatedAt());
         res.setUpdatedAt(comment.getUpdatedAt());
 
         Map<String, Integer> likeCounts = likeService.getLikeCount(comment.getId(), "COMMENT");
         res.setLikes(likeCounts.getOrDefault("like", 0));
         res.setDisLikes(likeCounts.getOrDefault("dislike", 0));
+
+        return res;
+    }
+
+    private CommentResponse toResponse(CommentEntity comment, String loginId) {
+        CommentResponse res = new CommentResponse();
+
+        UserEntity userEntity = comment.getUser();
+        UserDto userDto = new UserDto();
+        userDto.setUserName(userEntity.getUserName());
+        userDto.setLoginId(userEntity.getLoginId());
+        // 필요한 UserDto 필드들 채우기
+
+        res.setUser(userDto);
+
+        res.setId(comment.getId());
+        res.setContent(comment.getContent());
+        res.setCreatedAt(comment.getCreatedAt());
+        res.setUpdatedAt(comment.getUpdatedAt());
+
+        Map<String, Integer> likeCounts = likeService.getLikeCount(comment.getId(), "COMMENT");
+        res.setLikes(likeCounts.getOrDefault("like", 0));
+        res.setDisLikes(likeCounts.getOrDefault("dislike", 0));
+
+        if (loginId != null) {
+            boolean liked = likeService.isLikedByUser(comment.getId(), loginId, "COMMENT", LikeEntity.LikeType.LIKE);
+            boolean disliked = likeService.isLikedByUser(comment.getId(), loginId, "COMMENT", LikeEntity.LikeType.DISLIKE);
+            res.setLikedByMe(liked);
+            res.setDislikedByMe(disliked);
+        } else {
+            res.setLikedByMe(false);
+            res.setDislikedByMe(false);
+        }
+
         return res;
     }
 

@@ -20,9 +20,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         String token = jwtUtil.resolveToken(request);
@@ -35,13 +33,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Authentication authentication = jwtUtil.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     log.info("JwtAuthenticationFilter - 인증 성공: {}", authentication.getName());
+                } else {
+                    log.info("JwtAuthenticationFilter - 토큰 유효하지 않음");
                 }
             } catch (Exception e) {
-                log.info("JwtAuthenticationFilter - 토큰 없음 또는 유효하지 않음");
+                log.info("JwtAuthenticationFilter - 토큰 검증 중 예외 발생: {}", e.getMessage());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
+        } else {
+            log.info("JwtAuthenticationFilter - 토큰 없거나 이미 인증 처리됨");
         }
+
         filterChain.doFilter(request, response);
     }
 }

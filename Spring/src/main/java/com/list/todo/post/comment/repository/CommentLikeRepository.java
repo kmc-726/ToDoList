@@ -12,4 +12,5 @@ public interface CommentLikeRepository extends JpaRepository<CommentLikeEntity, 
     Optional<CommentLikeEntity> findByUserAndComment(UserEntity user, CommentEntity comment);
     void deleteByUserAndComment(UserEntity user, CommentEntity comment);
     int countByCommentAndType(CommentEntity comment, LikeEntity.LikeType type);
+    boolean existsByUserAndCommentIdAndType(UserEntity user, Long commentdId, LikeEntity.LikeType type);
 }

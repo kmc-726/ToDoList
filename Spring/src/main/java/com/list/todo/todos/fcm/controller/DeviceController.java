@@ -1,12 +1,14 @@
 package com.list.todo.todos.fcm.controller;
 
 import com.list.todo.auth.entity.UserEntity;
+import com.list.todo.auth.security.CustomUserDetails;
 import com.list.todo.global.exception.LoginException;
 import com.list.todo.auth.repository.UserRepository;
 import com.list.todo.todos.fcm.dto.DeviceDto;
 import com.list.todo.todos.fcm.dto.FcmTokenRequest;
 import com.list.todo.todos.fcm.entity.FcmTokenEntity;
 import com.list.todo.todos.fcm.repository.FcmTokenRepository;
+import com.list.todo.todos.fcm.service.FcmService;
 import com.list.todo.todos.todo.service.TodosService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +29,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DeviceController {
 
-    private final TodosService todosService;
+    private final FcmService fcmService;
     private final UserRepository userRepository;
     private final FcmTokenRepository fcmTokenRepository;
+
+//    @PostMapping("/save-fcm-token")
+//    public ResponseEntity<?> saveFcmToken(@RequestBody FcmTokenRequest request, @AuthenticationPrincipal UserDetails userDetails) {
+//        String loginId = userDetails.getUsername();
+//        UserEntity user = userRepository.findByLoginId(loginId)
+//                .orElseThrow(() -> new LoginException("사용자를 찾을 수 없습니다."));
+//
+//        try {
+//            fcmService.registerFcmToken(user, request.getToken(), request.getDeviceInfo());
+//            return ResponseEntity.ok("FCM 토큰 저장 완료");
+//        } catch (IllegalStateException e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//        }
+//    }
 
     @PostMapping("/save-fcm-token")
     public ResponseEntity<?> saveFcmToken(@RequestBody FcmTokenRequest request, @AuthenticationPrincipal UserDetails userDetails) {
@@ -58,7 +74,13 @@ public class DeviceController {
     }
 
     @GetMapping("")
-    public List<DeviceDto> getMyDevices(@AuthenticationPrincipal UserEntity user) {
+    public List<DeviceDto> getMyDevices(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserEntity user = userRepository.findByLoginId(userDetails.getUsername())
+                .orElseThrow(() -> new LoginException("사용자를 찾을 수 없습니다."));
+        log.info("🔍 loginId: {}", userDetails.getUsername());
+        log.info("🔍 UserEntity ID: {}", user.getId());
+        log.info("🔍 등록된 디바이스 수: {}", fcmTokenRepository.findAllByUser(user).size());
+
         return fcmTokenRepository.findAllByUser(user).stream()
                 .map(DeviceDto::fromEntity)
                 .collect(Collectors.toList());

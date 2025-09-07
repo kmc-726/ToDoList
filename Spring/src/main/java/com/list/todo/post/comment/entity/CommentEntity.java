@@ -44,6 +44,8 @@ public class CommentEntity {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    private LocalDateTime deletedAt;
+
     public CommentEntity(Long id) {
         this.id = id;
     }

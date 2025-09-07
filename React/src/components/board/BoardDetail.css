@@ -1,0 +1,21 @@
+.board-detail {
+    background-color: #ffffff;
+    padding: 2rem 2rem 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+
+.board-detail h2 {
+    margin-bottom: 1rem;
+}
+
+.board-detail > div {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.board-detail p {
+    margin-bottom: 0.8rem;
+}

@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -133,5 +134,18 @@ public class LikeService {
         }
 
         return Map.of("like", likeCount, "dislike", dislikeCount);
+    }
+
+    public boolean isLikedByUser(Long entityId, String loginId, String entityType, LikeEntity.LikeType type) {
+        Optional<UserEntity> userOpt = userRepository.findByLoginId(loginId);
+        if (userOpt.isEmpty()) return false;
+        UserEntity user = userOpt.get();
+
+        if ("BOARD".equals(entityType)) {
+            return boardLikeRepository.existsByUserAndBoardIdAndType(user, entityId, type);
+        } else if ("COMMENT".equals(entityType)) {
+            return commentLikeRepository.existsByUserAndCommentIdAndType(user, entityId, type);
+        }
+        return false;
     }
 }

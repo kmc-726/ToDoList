@@ -2,7 +2,9 @@ package com.list.todo.todos.fcm.entity;
 
 import com.list.todo.auth.entity.UserEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class FcmTokenEntity {
 
     @Id

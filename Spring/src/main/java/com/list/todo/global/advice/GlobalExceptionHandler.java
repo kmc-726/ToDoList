@@ -44,6 +44,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<String> handleUnauthorizedException(UnauthorizedException e){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }
+
     @ExceptionHandler(InvalidDueDateException.class)
     public ResponseEntity<String> handleInvalidDueDateException(InvalidDueDateException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

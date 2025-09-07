@@ -1,6 +1,10 @@
-package com.list.todo.todos.reminder.service;
+package com.list.todo.scheduler;
 
 import com.list.todo.auth.entity.UserEntity;
+import com.list.todo.post.board.entity.BoardEntity;
+import com.list.todo.post.board.repository.BoardRepository;
+import com.list.todo.post.comment.entity.CommentEntity;
+import com.list.todo.post.comment.repository.CommentRepository;
 import com.list.todo.todos.fcm.entity.FcmTokenEntity;
 import com.list.todo.todos.reminder.entity.RemindersEntity;
 import com.list.todo.todos.todo.entity.TodosEntity;
@@ -16,8 +20,10 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ReminderScheduler {
+public class Scheduler {
 
+    private final BoardRepository boardRepository;
+    private final CommentRepository commentRepository;
     private final ReminderRepository reminderRepository;
     private final FcmTokenRepository fcmTokenRepository;
     private final FcmService fcmService;
@@ -50,5 +56,17 @@ public class ReminderScheduler {
             reminder.setSent(true);
             reminderRepository.save(reminder);
         }
+    }
+
+    @Scheduled(cron = "0 0 2 * * *") // 매일 새벽 2시
+    public void purgeSoftDeletedBoards() {
+        List<BoardEntity> deletedBoards = boardRepository.findAllByDeletedTrueAndDeletedAtBefore(LocalDateTime.now().minusDays(30));
+        boardRepository.deleteAll(deletedBoards);
+    }
+
+    @Scheduled(cron = "0 0 2 * * *") // 매일 새벽 2시
+    public void purgeSoftDeletedComments() {
+        List<CommentEntity> deletedComments = commentRepository.findAllByDeletedTrueAndDeletedAtBefore(LocalDateTime.now().minusDays(30));
+        commentRepository.deleteAll(deletedComments);
     }
 }

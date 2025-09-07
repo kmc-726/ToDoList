@@ -40,35 +40,35 @@ public class FcmService {
     }
 
     public void registerFcmToken(UserEntity user, String token, String deviceInfo) {
-        List<FcmTokenEntity> tokens = fcmTokenRepository.findAllByUser(user);
+        // 1. 토큰 단위로 먼저 조회해서 기존 토큰 있으면 갱신
+        Optional<FcmTokenEntity> existingTokenOpt = fcmTokenRepository.findByToken(token);
 
-        // 이미 등록된 토큰이면 갱신
-        Optional<FcmTokenEntity> existing = tokens.stream()
-                .filter(t -> t.getToken().equals(token))
-                .findFirst();
-
-        if (existing.isPresent()) {
-            FcmTokenEntity t = existing.get();
-            t.setDeviceInfo(deviceInfo);
-            t.setLastUpdated(LocalDateTime.now());
-            t.setEnabled(true);
-            fcmTokenRepository.save(t);
+        if (existingTokenOpt.isPresent()) {
+            FcmTokenEntity existingToken = existingTokenOpt.get();
+            existingToken.setUser(user);
+            existingToken.setDeviceInfo(deviceInfo);
+            existingToken.setLastUpdated(LocalDateTime.now());
+            existingToken.setEnabled(true);
+            fcmTokenRepository.save(existingToken);
             return;
         }
 
-        // 등록된 토큰이 2개 이상이면 등록 차단 또는 사용자에게 알려주기
-        if (tokens.size() >= 2) {
+        // 2. 새 토큰이면, 먼저 해당 유저가 가진 등록된 토큰 개수 확인
+        int userTokenCount = fcmTokenRepository.countByUser(user);
+
+        if (userTokenCount >= 2) {
             throw new IllegalStateException("알림 수신 디바이스는 최대 2개까지 등록할 수 있습니다.");
         }
 
-        // 새 토큰 저장
+        // 3. 제한에 걸리지 않으면 새 토큰 등록
         FcmTokenEntity newToken = new FcmTokenEntity();
-        newToken.setUser(user);
         newToken.setToken(token);
         newToken.setDeviceInfo(deviceInfo);
+        newToken.setUser(user);
         newToken.setLastUpdated(LocalDateTime.now());
         newToken.setEnabled(true);
 
         fcmTokenRepository.save(newToken);
     }
+
 }

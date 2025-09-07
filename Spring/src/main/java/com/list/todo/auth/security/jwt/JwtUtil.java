@@ -1,10 +1,14 @@
 package com.list.todo.auth.security.jwt;
 
+import com.list.todo.auth.entity.UserEntity;
+import com.list.todo.auth.repository.UserRepository;
+import com.list.todo.auth.security.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -28,9 +33,11 @@ public class JwtUtil {
 
     private static final long accessTokenValidTime = 1000 * 60 * 60;
     private static final long refreshTokenValidTime = 1000 * 60 * 60 * 24 * 7;
+    private final UserRepository userRepository;
     private final SecretKey key;
 
-    public JwtUtil(@Value("${jwt.secret}") String base64SecretKey){
+    public JwtUtil(UserRepository userRepository, @Value("${jwt.secret}") String base64SecretKey){
+        this.userRepository = userRepository;
         byte[] keyBytes = Base64.getDecoder().decode(base64SecretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -51,8 +58,13 @@ public class JwtUtil {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String loginId = userDetails.getLoginId();
+
+        log.info("유저테일즈 정보 {}", userDetails);
+
         return Jwts.builder()
-                .subject(authentication.getName())
+                .subject(loginId)
                 .claim("roles", roles)
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -64,6 +76,7 @@ public class JwtUtil {
         Claims claims = getClaims(token);
 
         String loginId = claims.getSubject();
+        log.info("로그인 아이디{}", claims.getSubject());
 
         Object rolesObject = claims.get("roles");
         List<String> roles;
@@ -88,7 +101,10 @@ public class JwtUtil {
         log.info("JWT subject: {}", claims.getSubject());
         log.info("JWT roles: {}", claims.get("roles"));
 
-        UserDetails userDetails = new User(loginId, "", authorities);
+        UserEntity userEntity = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+
+        UserDetails userDetails = new CustomUserDetails(userEntity, authorities);
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
@@ -110,19 +126,21 @@ public class JwtUtil {
     }
 
     public String resolveToken(HttpServletRequest request) {
-
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            log.info("resolveToken - Authorization 헤더에서 토큰 추출됨");
             return bearerToken.substring(7);
         }
 
         if (request.getCookies() != null) {
             for (var cookie : request.getCookies()) {
                 if ("accessToken".equals(cookie.getName())) {
+                    log.info("resolveToken - 쿠키에서 토큰 추출됨");
                     return cookie.getValue();
                 }
             }
         }
+        log.info("resolveToken - 토큰 없음");
         return null;
     }
 
